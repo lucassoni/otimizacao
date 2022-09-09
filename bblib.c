@@ -27,7 +27,7 @@ int calculaCusto(ator *atores)
 
 int calculaCustoRestantes(ator *atores)
 {
-    int custo = 0, n_atoresescolhidos = 0, n_atoresnescolhidos;
+    int custo = 0, n_atorese scolhidos = 0, n_atoresnescolhidos;
     for (int i = 0; i < m; i++)
     {
         if (atores[i].escolhido == 1)
@@ -45,6 +45,15 @@ int calculaCustoRestantes(ator *atores)
         custo += valores[i];
     }
     return custo;
+}
+
+void sort(int array[], int n)
+{
+    int i, j;
+    for (i = 0; i < n - 1; i++)
+        for (j = 0; j < n - i - 1; j++)
+            if (array[j] > array[j + 1])
+                swap(&array[j], &array[j + 1]);
 }
 
 int limitante(ator *atores)
@@ -91,6 +100,15 @@ int quantEscolhidos(ator *atores)
         }
     }
     return escolhidos;
+}
+
+void trocaMelhor(int custo, ator *atores)
+{
+    melhor.custo = custo;
+    for (int i = 0; i < m; i++)
+    {
+        melhor.atores[i] = atores[i].escolhido;
+    }
 }
 
 // funcao para inicializar a variavel melhor
@@ -170,8 +188,13 @@ void Soluciona(int i, ator *atores)
         return;
     }
 
-    if (m == n)
+    if (quantEscolhidos(atores) == n)
     {
+        int custo_atual = calculaCusto(atores);
+        if (melhor.custo > custo_atual)
+        {
+            trocaMelhor(custo_atual, atores);
+        }
     }
 
     // ramifica para esquerda
