@@ -22,26 +22,38 @@ int calculaCusto(ator *atores)
             custo += atores[i].custo;
         }
     }
+    return custo;
 }
 
 int calculaCustoRestantes(ator *atores)
 {
-    int custo = 0;
+    int custo = 0, n_atoresescolhidos = 0, n_atoresnescolhidos;
     for (int i = 0; i < m; i++)
     {
-        if (atores[i].escolhido == 0)
+        if (atores[i].escolhido == 1)
         {
-            custo += atores[i].custo;
+            n_atoresescolhidos++;
         }
     }
+    n_atoresnescolhidos = m - n_atoresescolhidos;
+    int *valores;
+    int x = n - n_atoresescolhidos;
+    valores = malloc(sizeof(int *n_atoresnescolhidos));
+    sort(valores);
+    for (int i = 0; i < x; i++)
+    {
+        custo += valores[i];
+    }
+    return custo;
 }
 
 int limitante(ator *atores)
 {
     int custo1, custo2, custores;
+
     custo1 = calculaCusto(atores);
     custo2 = calculaCustoRestantes(atores);
-    custores = custo1 + custo2 * x;
+    custores = custo1 + custo2;
 }
 
 // retorna a quantidade de grupos distintos entre os atores escolhidos
