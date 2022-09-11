@@ -2,9 +2,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define BOUND2 true
+#define BOUND1 false
+
 typedef struct ator
 {
-    int custo;
+    float custo;
     int grupos;
     int *idGrupos;
     int escolhido;
@@ -12,13 +15,23 @@ typedef struct ator
 
 typedef struct valor
 {
-    int custo;
-    int *atores;
+    float custo;
+    ator *atores;
 } valor;
 
-extern int l, m, n;
+extern int l, m, n, quantNos;
 
-int calculaCusto(ator *atores);
+extern bool otimilidade, viabilidade, bound;
+
+void printaMelhor();
+
+float calculaCusto(ator *atores);
+
+int compare(const void *num1, const void *num2);
+
+float Bound(int i, ator *atores);
+
+float Bound2(int i, ator *atores);
 
 int quantGrupos(ator *atores);
 

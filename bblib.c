@@ -5,14 +5,35 @@
 #include <stdbool.h>
 
 valor melhor;
-int l, m, n;
+int l, m, n, quantNos;
+bool otimilidade, viabilidade, bound;
 
 // L = Quantidade de Grupos Sociais
 // M = Atores
 // N = Personagens
 
+void printaMelhor(ator *atores)
+{
+    // if (quantEscolhidos(melhor.atores) != n || quantGrupos(melhor.atores) != l)
+    // {
+    //     printf("Inviavel\n");
+    //     exit(0);
+    // }
+    for (int i = 0; i < m; i++)
+    {
+        if (melhor.atores[i].escolhido)
+        {
+            printf("%d ", i + 1);
+        }
+    }
+    printf("\n");
+    printf("%.2f\n", melhor.custo);
+    // printaAtores(atores);
+    // printf("--------------\n");
+    // printaAtores(melhor.atores);
+}
 // retorna o custo dos atores escolhidos
-int calculaCusto(ator *atores)
+float calculaCusto(ator *atores)
 {
     int custo = 0;
     for (int i = 0; i < m; i++)
@@ -25,44 +46,79 @@ int calculaCusto(ator *atores)
     return custo;
 }
 
-int calculaCustoRestantes(ator *atores)
+int compare(const void *num1, const void *num2)
 {
-    int custo = 0, n_atorese scolhidos = 0, n_atoresnescolhidos;
-    for (int i = 0; i < m; i++)
+    if (*(int *)num1 > *(int *)num2)
+        return 1;
+    else
+        return -1;
+}
+
+// Bound proprio
+float Bound(int i, ator *atores)
+{
+    float custo = 0;
+    if (m > i)
     {
-        if (atores[i].escolhido == 1)
+        float *atoresRestantes = malloc(sizeof(float) * (m - i));
+        int k = 0;
+        for (int j = i; j < m; j++)
         {
-            n_atoresescolhidos++;
+            atoresRestantes[k] = atores[j].custo;
+            k++;
         }
+
+        qsort(atoresRestantes, m - i, sizeof(float), compare);
+
+        int quantJaEscolhidos = quantEscolhidos(atores) - (m - i);
+        for (int j = 0; j < n - quantJaEscolhidos; j++)
+        {
+            custo += atoresRestantes[j];
+        }
+        free(atoresRestantes);
     }
-    n_atoresnescolhidos = m - n_atoresescolhidos;
-    int *valores;
-    int x = n - n_atoresescolhidos;
-    valores = malloc(sizeof(int *n_atoresnescolhidos));
-    sort(valores);
-    for (int i = 0; i < x; i++)
+
+    for (int j = 0; j < i; j++)
     {
-        custo += valores[i];
+        if (atores[j].escolhido)
+            custo += atores[j].custo;
     }
+
     return custo;
 }
 
-void sort(int array[], int n)
+// Bound professor
+float Bound2(int i, ator *atores)
 {
-    int i, j;
-    for (i = 0; i < n - 1; i++)
-        for (j = 0; j < n - i - 1; j++)
-            if (array[j] > array[j + 1])
-                swap(&array[j], &array[j + 1]);
-}
+    float custo = 0;
+    if (m > i)
+    {
 
-int limitante(ator *atores)
-{
-    int custo1, custo2, custores;
+        float *atoresRestantes = malloc(sizeof(float) * (m - i));
+        int k = 0;
+        for (int j = i; j < m; j++)
+        {
+            atoresRestantes[k] = atores[j].custo;
+            k++;
+        }
 
-    custo1 = calculaCusto(atores);
-    custo2 = calculaCustoRestantes(atores);
-    custores = custo1 + custo2;
+        qsort(atoresRestantes, m - i, sizeof(float), compare);
+
+        int quantJaEscolhidos = quantEscolhidos(atores) - (m - i);
+        for (int j = 0; j < n - quantJaEscolhidos; j++)
+        {
+            custo += atoresRestantes[0];
+        }
+        free(atoresRestantes);
+    }
+
+    for (int j = 0; j < i; j++)
+    {
+        if (atores[j].escolhido)
+            custo += atores[j].custo;
+    }
+
+    return custo;
 }
 
 // retorna a quantidade de grupos distintos entre os atores escolhidos
@@ -84,6 +140,7 @@ int quantGrupos(ator *atores)
             }
         }
     }
+    free(grupos);
 
     return quantGrupos;
 }
@@ -107,7 +164,7 @@ void trocaMelhor(int custo, ator *atores)
     melhor.custo = custo;
     for (int i = 0; i < m; i++)
     {
-        melhor.atores[i] = atores[i].escolhido;
+        melhor.atores[i] = atores[i];
     }
 }
 
@@ -115,41 +172,26 @@ void trocaMelhor(int custo, ator *atores)
 void inicializaMelhor()
 {
     melhor.custo = INFINITY;
-    melhor.atores = malloc(sizeof(int) * m);
+    melhor.atores = malloc(sizeof(ator) * m);
     for (int i = 0; i < m; i++)
     {
-        melhor.atores[i] = 1;
+        melhor.atores[i].escolhido = 1;
     }
 }
 
 ator *leAtores()
 {
     ator *atores = malloc(sizeof(ator) * m);
-    int *grupos = calloc(l, sizeof(int));
-    int quantGrupos = 0;
     for (int i = 0; i < m; i++)
     {
-        scanf("%d %d", &atores[i].custo, &atores[i].grupos);
+        scanf("%f %d", &atores[i].custo, &atores[i].grupos);
         atores[i].idGrupos = malloc(sizeof(int) * atores[i].grupos);
         for (int j = 0; j < atores[i].grupos; j++)
         {
             scanf("%d", &atores[i].idGrupos[j]);
-            if (grupos[atores[i].idGrupos[j]] == 0)
-            {
-                quantGrupos++;
-                grupos[atores[i].idGrupos[j]] = 1;
-            }
         }
         atores[i].escolhido = 1;
     }
-
-    if (quantGrupos < l)
-    {
-        printf("Inviavel\n");
-        exit(0);
-    }
-
-    free(grupos);
 
     return atores;
 }
@@ -159,17 +201,23 @@ void printaAtores(ator *atores)
     for (int i = 0; i < m; i++)
     {
         printf("ator %d\n", i);
-        printf("custo: %d grupos: %d\n", atores[i].custo, atores[i].grupos);
+        printf("custo: %f grupos: %d\n", atores[i].custo, atores[i].grupos);
         for (int j = 0; j < atores[i].grupos; j++)
         {
             printf("grupo: %d\n", atores[i].idGrupos[j]);
         }
+        printf("escolhido: %d\n", atores[i].escolhido);
         printf("\n");
     }
 }
 
 bool factivel(int i, ator *atores)
 {
+    if (m < n)
+    {
+        return false;
+    }
+
     if (quantGrupos(atores) < l)
         return false;
 
@@ -179,29 +227,83 @@ bool factivel(int i, ator *atores)
     return true;
 }
 
+static float menor(float a, float b)
+{
+    if (a < b)
+        return a;
+    else
+        return b;
+}
+
 void Soluciona(int i, ator *atores)
 {
-    if (i > 3)
-        return;
-    if (factivel(i, atores))
+    quantNos++;
+    if (otimilidade)
     {
-        return;
-    }
-
-    if (quantEscolhidos(atores) == n)
-    {
-        int custo_atual = calculaCusto(atores);
-        if (melhor.custo > custo_atual)
+        if (viabilidade)
         {
-            trocaMelhor(custo_atual, atores);
+            if (!factivel(i, atores))
+            {
+                return;
+            }
         }
+        if (i > m)
+        {
+            return;
+        }
+
+        if (quantEscolhidos(atores) == n && quantGrupos(atores) == l)
+        {
+            int custo_atual = calculaCusto(atores);
+            if (melhor.custo > custo_atual)
+            {
+                trocaMelhor(custo_atual, atores);
+            }
+        }
+        // bound pick
+
+        float escolhe_limitante;
+        if (!bound)
+            escolhe_limitante = Bound(i + 1, atores);
+        else
+            escolhe_limitante = Bound2(i + 1, atores);
+        // bound skip
+        atores[i].escolhido = 0;
+        float pula_limitante = Bound(i + 1, atores);
+        atores[i].escolhido = 1;
+
+        if (menor(escolhe_limitante, pula_limitante) >= melhor.custo)
+            return;
+        // ramifica para esquerda
+        atores[i].escolhido = 0;
+        Soluciona(i + 1, atores);
+        // ramifica para direita
+        atores[i].escolhido = 1;
+        Soluciona(i + 1, atores);
     }
 
-    // ramifica para esquerda
-    atores[i].escolhido = 0;
-    Soluciona(i + 1, atores);
+    else
+    {
+        if (i > m)
+        {
+            return;
+        }
 
-    // ramifica para direita
-    atores[i].escolhido = 1;
-    Soluciona(i + 1, atores);
+        if (quantEscolhidos(atores) == n && quantGrupos(atores) == l)
+        {
+            float custo_atual = calculaCusto(atores);
+            if (melhor.custo > custo_atual)
+            {
+                trocaMelhor(custo_atual, atores);
+            }
+        }
+
+        // ramifica para esquerda
+        atores[i].escolhido = 0;
+        Soluciona(i + 1, atores);
+
+        // ramifica para direita
+        atores[i].escolhido = 1;
+        Soluciona(i + 1, atores);
+    }
 }
