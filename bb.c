@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     }
 
     inicializaMelhor();
+
     quantNos = 0;
     Soluciona(0, atores);
     printaMelhor(atores);

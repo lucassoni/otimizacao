@@ -237,7 +237,6 @@ static float menor(float a, float b)
 
 void Soluciona(int i, ator *atores)
 {
-    quantNos++;
     if (otimilidade)
     {
         if (viabilidade)
@@ -252,6 +251,8 @@ void Soluciona(int i, ator *atores)
             return;
         }
 
+        quantNos++;
+
         if (quantEscolhidos(atores) == n && quantGrupos(atores) == l)
         {
             int custo_atual = calculaCusto(atores);
@@ -261,25 +262,49 @@ void Soluciona(int i, ator *atores)
             }
         }
         // bound pick
-
         float escolhe_limitante;
         if (!bound)
             escolhe_limitante = Bound(i + 1, atores);
         else
             escolhe_limitante = Bound2(i + 1, atores);
+
         // bound skip
         atores[i].escolhido = 0;
-        float pula_limitante = Bound(i + 1, atores);
+        float pula_limitante;
+        if (!bound)
+            pula_limitante = Bound(i + 1, atores);
+        else
+            pula_limitante = Bound2(i + 1, atores);
         atores[i].escolhido = 1;
 
         if (menor(escolhe_limitante, pula_limitante) >= melhor.custo)
             return;
-        // ramifica para esquerda
-        atores[i].escolhido = 0;
-        Soluciona(i + 1, atores);
-        // ramifica para direita
-        atores[i].escolhido = 1;
-        Soluciona(i + 1, atores);
+
+        if (escolhe_limitante < pula_limitante)
+        {
+
+            Soluciona(i + 1, atores);
+            if (pula_limitante < melhor.custo)
+            {
+                // ramifica para esquerda
+                atores[i].escolhido = 0;
+                Soluciona(i + 1, atores);
+                // ramifica para direita
+                atores[i].escolhido = 1;
+            }
+        }
+        else
+        {
+            // ramifica para esquerda
+            atores[i].escolhido = 0;
+            Soluciona(i + 1, atores);
+            // ramifica para direita
+            atores[i].escolhido = 1;
+            if (pula_limitante < melhor.custo)
+            {
+                Soluciona(i + 1, atores);
+            }
+        }
     }
 
     else
@@ -288,6 +313,8 @@ void Soluciona(int i, ator *atores)
         {
             return;
         }
+
+        quantNos++;
 
         if (quantEscolhidos(atores) == n && quantGrupos(atores) == l)
         {

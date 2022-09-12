@@ -15,4 +15,4 @@ clean:
 	-rm -f *~ *.o
 	
 purge: clean
-	-rm -f bb
+	-rm -f elenco
